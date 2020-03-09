@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>STOMP CHAT</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+</head>
+<body>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-4">
+				<div class="input-group mt-3 mb-3" id="divChat">
+					<input type="text" class="form-control" id="textRoom" placeholder="방이름입력" aria-label="방이름입력">
+					<div class="input-group-append">
+						<button class="btn btn-outline-secondary" type="button" id="btnRooom">방만들기</button>
+					</div>
+				</div>
+				<div class="list-group" id="divRoomList">
+				</div>
+			</div>
+			<div class="col-8">
+				<div class="input-group mt-3 mb-3" id="divChat">
+					<input type="text" class="form-control" id="textChat" placeholder="채팅입력" aria-label="채팅입력">
+					<div class="input-group-append">
+						<button class="btn btn-outline-secondary" type="button" id="btnSend">전송</button>
+						<button class="btn btn-outline-secondary" type="button" id="btnDisconnect">나가기</button>
+					</div>
+				</div>
+
+				<div class="mt-3 mb-3">
+					<table id="conversation" class="table table-striped">
+						<thead>
+							<tr>
+								<th>
+									<div class="input-group mt-3 mb-3" id="divChat">
+										<div class="input-group-prepend">
+											<span class="input-group-text">방제목</span>
+										</div>
+										<input type="text" class="form-control" id="titleTalk" placeholder="방제목" aria-label="방제목">
+										<div class="input-group-append">
+											<button class="btn btn-outline-secondary" type="button" id="btnModify">수정</button>
+											<button class="btn btn-outline-secondary" type="button" id="btnDelete">삭제</button>
+										</div>
+									</div>
+								</th>
+							</tr>
+						</thead>
+						<tbody id="bodyTalk">
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/sockjs-client/sockjs.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/stomp-websocket/stomp.min.js}"></script>
+	
+	<script type="text/javascript">
+	
+		var stompClient = null;
+		var ROOM_ID = null;
+	
+		$(function() {
+			init();
+		});
+		
+		function goRoom(el) {
+			ROOM_ID = $(el).attr('id');
+			$("#titleTalk").val($(el).text());
+			disconnect();
+			connect();
+		}
+		
+		function init() {
+			getRoomList();
+			$("#conversation").hide();
+			$("#btnSend").prop("disabled", true);
+		    $("#btnDisconnect").prop("disabled", true);
+			setEvent();
+		}
+		
+		function getRoomList() {
+			$("#divRoomList").empty();
+			$.ajax({
+	            url:'/room/resource',
+	            method:'GET',
+	            data: { test: "test" },
+	            dataType: "json",
+	            success : function(response) {
+	            	var data = response.data;
+	            	var buttonHtml = '';
+	            	for (var i=0; i<data.length; i++){
+	            		buttonHtml += '<button type="button" class="list-group-item list-group-item-action" id="room-'+ data[i].id+ '" onClick="javascript:goRoom(this);">'+ data[i].name + '</button>';
+	            	}
+	    			$("#divRoomList").append(buttonHtml);
+            	},
+            	error : function(request, status, error ) { 
+            		console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+            	},
+            	complete : function () {
+            	}
+			});
+		}
+		
+		function createRoom() {
+			var roomName = $("#textRoom").val();
+			if(roomName != ""){
+				$.ajax({
+		            url:'/room/resource',
+		            method:'POST',
+		            data: { name: roomName },
+		            dataType: "json",
+		            success : function(response) {
+		            	var code = response.code;
+		            	if(code == "100200") {
+		            		getRoomList();
+		            		$("#textRoom").val("");
+		            	} else {
+		            		alert("fail create room");
+		            	}
+	            	},
+	            	error : function(request, status, error ) { 
+	            		console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+	            	},
+	            	complete : function () {
+	            	}
+				});
+			}
+		}
+		
+		function updateRoom() {
+			var roomName = $("#titleTalk").val();
+			$.ajax({
+	            url:'/room/resource',
+	            method:'PUT',
+	            data: { id: ROOM_ID.replace(/room\-/g,''), name: roomName },
+	            dataType: "json",
+	            success : function(response) {
+	            	var code = response.code;
+	            	if(code == "100200") {
+	            		getRoomList();
+	            	} else {
+	            		alert("fail create room");
+	            	}
+            	},
+            	error : function(request, status, error ) { 
+            		console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+            	},
+            	complete : function () {
+            	}
+			});
+		}
+		
+		function deleteRoom() {
+			$.ajax({
+	            url:'/room/resource',
+	            method:'DELETE',
+	            data: { id: ROOM_ID.replace(/room\-/g,'') },
+	            dataType: "json",
+	            success : function(response) {
+	            	var code = response.code;
+	            	if(code == "100200") {
+	            		disconnect();
+	            		getRoomList();
+	            	} else {
+	            		alert("fail create room");
+	            	}
+            	},
+            	error : function(request, status, error ) { 
+            		console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+            	},
+            	complete : function () {
+            	}
+			});
+		}
+
+		function setEvent() {
+			$("#btnDisconnect").click(function() {
+				disconnect();
+			});
+			$("#btnSend").click(function() {
+				send();
+			});
+			$("#btnRooom").click(function() {
+				createRoom();
+			});
+			$("#btnModify").click(function() {
+				updateRoom();
+			});
+			$("#btnDelete").click(function() {
+				deleteRoom();
+			});
+			$("#textRoom").keydown(function(key) {
+				if (key.keyCode == 13) {
+					createRoom();
+				}
+			});
+			$("#textChat").keydown(function(key) {
+				if (key.keyCode == 13) {
+					send();
+				}
+			});
+		}
+
+		function setConnected(connected) {
+			if (connected) {
+				$("#conversation").show();
+				$("#btnSend").prop("disabled", !connected);
+				$("#btnDisconnect").prop("disabled", !connected);
+			} else {
+				$("#conversation").hide();
+				$("#btnSend").prop("disabled", connected);
+				$("#btnDisconnect").prop("disabled", connected);
+			}
+			$("#bodyTalk").html("");
+		}
+
+		function connect() {
+			var socket = new SockJS('/secured/ws-stomp');
+			stompClient = Stomp.over(socket);
+			stompClient.connect({}, function(frame) {
+				setConnected(true);
+				console.log('Connected: ' + frame);
+				stompClient.subscribe('/sub/inout/' + ROOM_ID, function(json) {
+					$("#bodyTalk").append("<tr><td>" + JSON.parse(json.body).content+ "</td></tr>");
+				});
+			});
+		}
+
+		function disconnect() {
+			if (stompClient !== null) {
+				stompClient.disconnect();
+			}
+			setConnected(false);
+			console.log("Disconnected");
+		}
+
+		function send() {
+			if($("#textChat").val() != "") {
+				stompClient.send("/pub/inout/" + ROOM_ID, {
+					chatType : "INOUT"
+				}, JSON.stringify({
+					'name' : $("#textChat").val()
+				}));
+				$("#textChat").val("");
+			}
+		}
+	</script>
+	
+</body>
+</html>

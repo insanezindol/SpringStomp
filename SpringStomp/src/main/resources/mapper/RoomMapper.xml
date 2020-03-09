@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.RoomMapper">
+
+	<select id="selectList" resultType="ChatRoom">
+		SELECT
+			id, name, date
+		FROM
+			appdb.chat_room
+	</select>
+	
+	<select id="selectOne" parameterType="ChatRoom" resultType="ChatRoom">
+		SELECT
+			id, name, date
+		FROM 
+			appdb.chat_room
+		where 
+			id = #{id}
+	</select>
+	
+	<insert id="insertChatRoom" parameterType="ChatRoom">
+		insert into appdb.chat_room (name, date)
+		values (#{name}, now())
+	</insert>
+	
+	<update id="updateChatRoom" parameterType="ChatRoom">
+		update appdb.chat_room
+		set name = #{name}, date = now()
+		where id = #{id}
+	</update>
+	
+	<delete id="deleteChatRoom" parameterType="ChatRoom">
+		delete from appdb.chat_room
+		where id = #{id}
+	</delete>
+
+</mapper>
