@@ -2,18 +2,19 @@ package com.example.demo.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.mapper.RoomMapper;
 import com.example.demo.model.ChatRoom;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class RoomService {
 
-	@Autowired
-	RoomMapper roomMapper;
+	private final RoomMapper roomMapper;
 
 	@Transactional(readOnly = true)
 	public List<ChatRoom> getList() {

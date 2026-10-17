@@ -26,17 +26,16 @@ public class StompChannelInterceptor implements ChannelInterceptor {
 		log.debug("Message\t\t: {}", accessor.getMessage());
 		log.debug("ChatType\t\t: {}", accessor.getNativeHeader("chatType"));
 
+		// heartbeat 프레임 등은 command 가 null 일 수 있음
 		StompCommand command = accessor.getCommand();
-		if (command.equals(StompCommand.CONNECT)) {
-			log.info("[preSend] 연결요청");
-		} else if (command.equals(StompCommand.SUBSCRIBE)) {
-			log.info("[preSend] 구독");
-		} else if (command.equals(StompCommand.DISCONNECT)) {
-			log.info("[preSend] 연결해제");
-		} else if (command.equals(StompCommand.SEND)) {
-			log.info("[preSend] 전송");
-		} else {
-			log.info("[preSend] - {} ", command);
+		if (command != null) {
+			switch (command) {
+				case CONNECT -> log.info("[preSend] 연결요청");
+				case SUBSCRIBE -> log.info("[preSend] 구독");
+				case DISCONNECT -> log.info("[preSend] 연결해제");
+				case SEND -> log.info("[preSend] 전송");
+				default -> log.info("[preSend] - {} ", command);
+			}
 		}
 		
 		log.debug("[END] preSend");

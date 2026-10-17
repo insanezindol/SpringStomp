@@ -30,9 +30,9 @@ public class ChatController {
 	
 	@MessageMapping("/inout/{roomId}")
 	@SendTo("/sub/inout/{roomId}")
-	public Greeting inout(@DestinationVariable String roomId, ChatMessage message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
-		log.info("inout : {} - {} - {}", roomId, headerAccessor.getSessionId(), message.getName());
-		return new Greeting(headerAccessor.getSessionId() + " : " + HtmlUtils.htmlEscape(message.getName()));
+	public Greeting inout(@DestinationVariable String roomId, ChatMessage message, SimpMessageHeaderAccessor headerAccessor) {
+		log.info("inout : {} - {} - {}", roomId, headerAccessor.getSessionId(), message.name());
+		return new Greeting(headerAccessor.getSessionId() + " : " + HtmlUtils.htmlEscape(message.name()));
 	}
 
 }

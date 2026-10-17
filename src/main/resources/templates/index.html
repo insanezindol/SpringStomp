@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
 <title>STOMP CHAT</title>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
 </head>
 <body>
@@ -13,9 +13,7 @@
 			<div class="col-4">
 				<div class="input-group mt-3 mb-3" id="divChat">
 					<input type="text" class="form-control" id="textRoom" placeholder="방이름입력" aria-label="방이름입력">
-					<div class="input-group-append">
-						<button class="btn btn-outline-secondary" type="button" id="btnRooom">방만들기</button>
-					</div>
+					<button class="btn btn-outline-secondary" type="button" id="btnRoom">방만들기</button>
 				</div>
 				<div class="list-group" id="divRoomList">
 				</div>
@@ -23,10 +21,8 @@
 			<div class="col-8">
 				<div class="input-group mt-3 mb-3" id="divChat">
 					<input type="text" class="form-control" id="textChat" placeholder="채팅입력" aria-label="채팅입력">
-					<div class="input-group-append">
-						<button class="btn btn-outline-secondary" type="button" id="btnSend">전송</button>
-						<button class="btn btn-outline-secondary" type="button" id="btnDisconnect">나가기</button>
-					</div>
+					<button class="btn btn-outline-secondary" type="button" id="btnSend">전송</button>
+					<button class="btn btn-outline-secondary" type="button" id="btnDisconnect">나가기</button>
 				</div>
 
 				<div class="mt-3 mb-3">
@@ -35,14 +31,10 @@
 							<tr>
 								<th>
 									<div class="input-group mt-3 mb-3" id="divChat">
-										<div class="input-group-prepend">
-											<span class="input-group-text">방제목</span>
-										</div>
+										<span class="input-group-text">방제목</span>
 										<input type="text" class="form-control" id="titleTalk" placeholder="방제목" aria-label="방제목">
-										<div class="input-group-append">
-											<button class="btn btn-outline-secondary" type="button" id="btnModify">수정</button>
-											<button class="btn btn-outline-secondary" type="button" id="btnDelete">삭제</button>
-										</div>
+										<button class="btn btn-outline-secondary" type="button" id="btnModify">수정</button>
+										<button class="btn btn-outline-secondary" type="button" id="btnDelete">삭제</button>
 									</div>
 								</th>
 							</tr>
@@ -56,8 +48,7 @@
 	</div>
 
 	<script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
-	<script type="text/javascript" th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
-	<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
 	<script type="text/javascript" th:src="@{/webjars/sockjs-client/sockjs.min.js}"></script>
 	<script type="text/javascript" th:src="@{/webjars/stomp-websocket/stomp.min.js}"></script>
 	
@@ -181,28 +172,28 @@
 		}
 
 		function setEvent() {
-			$("#btnDisconnect").click(function() {
+			$("#btnDisconnect").on('click', function() {
 				disconnect();
 			});
-			$("#btnSend").click(function() {
+			$("#btnSend").on('click', function() {
 				send();
 			});
-			$("#btnRooom").click(function() {
+			$("#btnRoom").on('click', function() {
 				createRoom();
 			});
-			$("#btnModify").click(function() {
+			$("#btnModify").on('click', function() {
 				updateRoom();
 			});
-			$("#btnDelete").click(function() {
+			$("#btnDelete").on('click', function() {
 				deleteRoom();
 			});
-			$("#textRoom").keydown(function(key) {
-				if (key.keyCode == 13) {
+			$("#textRoom").on('keydown', function(key) {
+				if (key.key === "Enter" && !key.originalEvent.isComposing) {
 					createRoom();
 				}
 			});
-			$("#textChat").keydown(function(key) {
-				if (key.keyCode == 13) {
+			$("#textChat").on('keydown', function(key) {
+				if (key.key === "Enter" && !key.originalEvent.isComposing) {
 					send();
 				}
 			});
